@@ -1,0 +1,8 @@
+[package]
+name = "passbase"
+version = "0.1.0"
+authors = ["me@ojford.com"]
+
+[dependencies]
+clap = "^2.14"
+serde_json = "^0.8.3"
