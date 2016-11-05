@@ -2,7 +2,7 @@ extern crate clap;
 extern crate rand;
 extern crate serde_json;
 
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use rand::Rng;
 use serde_json::{Map, Value};
 use std::fs;
@@ -12,6 +12,22 @@ use std::io::prelude::*;
 use std::path::Path;
 use std::process;
 
+
+fn get_keybase_user() -> String {
+    process::Command::new("keybase")
+        .arg("login")
+        .spawn()
+        .expect("Keybase auth failed");
+    let output = process::Command::new("keybase")
+        .arg("status")
+        .arg("-j")
+        .output().unwrap();
+    let status: Map<String, Value> = serde_json::from_str(
+        &String::from_utf8_lossy(&output.stdout)
+    ).unwrap();
+
+    return String::from(status.get("Username").unwrap().as_str().unwrap());
+}
 
 fn read(passbase_dir: &Path, tag: &str) {
     let mut fp = fs::File::open(passbase_dir.join(tag)).unwrap();
@@ -127,22 +143,20 @@ fn main() {
         )
         .get_matches();
 
-    process::Command::new("keybase").arg("login").spawn().expect("Keybase auth failed");
-    let output = process::Command::new("keybase").arg("status").arg("-j").output().unwrap();
-    let kb_status: Map<String, Value> = serde_json::from_str(
-        &String::from_utf8_lossy(&output.stdout)
-    ).unwrap();
-    let kb_user: &str = kb_status.get("Username").unwrap().as_str().unwrap();
-    let passbase_dir = Path::new("/keybase/private").join(kb_user).join("passbase");
-
+    let passbase_dir = Path::new("/keybase/private")
+        .join(get_keybase_user())
+        .join("passbase");
     //TODO: if passbase_dir does not exist: create it
 
+    fn tag<'a>(args: &'a ArgMatches) -> &'a str {
+        return args.value_of("tag").unwrap();
+    }
     match app_matches.subcommand() {
-        ("list", _)             => { list(&passbase_dir); },
-        ("create", Some(args))  => { create(&passbase_dir, args.value_of("tag").unwrap()); },
-        ("change", Some(args))  => { change(&passbase_dir, args.value_of("tag").unwrap()); },
-        ("remove", Some(args))  => { remove(&passbase_dir, args.value_of("tag").unwrap()); },
-        ("read", Some(args))    => { read(&passbase_dir, args.value_of("tag").unwrap()); },
-        _                       => { read(&passbase_dir, &app_matches.value_of("tag").unwrap()); },
+        ("list", _) => list(&passbase_dir),
+        ("create", Some(args)) => create(&passbase_dir, tag(args)),
+        ("change", Some(args)) => change(&passbase_dir, tag(args)),
+        ("remove", Some(args)) => remove(&passbase_dir, tag(args)),
+        ("read", Some(args)) => read(&passbase_dir, tag(args)),
+        _ => read(&passbase_dir, tag(&app_matches)),
     }
 }
