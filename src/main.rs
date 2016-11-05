@@ -146,7 +146,16 @@ fn main() {
     let passbase_dir = Path::new("/keybase/private")
         .join(get_keybase_user())
         .join("passbase");
-    //TODO: if passbase_dir does not exist: create it
+
+    match passbase_dir.exists() {
+        true => {
+            assert!(passbase_dir.is_dir(), "A file 'passbase' already exists!")
+        },
+        false => {
+            println!("Passbase directory does not exist in KBFS, creating...");
+            fs::create_dir(&passbase_dir);
+        },
+    }
 
     fn tag<'a>(args: &'a ArgMatches) -> &'a str {
         return args.value_of("tag").unwrap();
