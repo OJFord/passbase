@@ -1,12 +1,15 @@
 extern crate clap;
+extern crate rand;
 extern crate serde_json;
 
 use clap::{App, AppSettings, Arg, SubCommand};
+use rand::Rng;
+use serde_json::{Map, Value};
 use std::fs;
+use std::error::Error;
 use std::io::prelude::*;
 use std::path::Path;
 use std::process;
-use serde_json::{Map, Value};
 
 
 fn read(passbase_dir: &Path, tag: &str) {
@@ -28,7 +31,24 @@ fn list(passbase_dir: &Path) {
 }
 
 fn create(passbase_dir: &Path, tag: &str) {
-    println!("Creating password for {tag}", tag=tag);
+    let file = passbase_dir.join(tag);
+    assert!(fs::metadata(&file).is_err(), format!("{} already exists!", tag));
+    let mut fp = fs::File::create(&file).unwrap();
+
+    let pass: String = rand::thread_rng()
+        .gen_ascii_chars()
+        .take(128)
+        .collect();
+
+    match fp.write_all(pass.as_bytes()) {
+        Err(why) => {
+            fs::remove_file(&file);
+            panic!("Failed to write new password: {}", why.description());
+        },
+        Ok(_) => {
+            read(passbase_dir, tag);
+        }
+    }
 }
 
 fn change(passbase_dir: &Path, tag: &str) {
