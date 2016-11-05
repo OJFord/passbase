@@ -52,7 +52,26 @@ fn create(passbase_dir: &Path, tag: &str) {
 }
 
 fn change(passbase_dir: &Path, tag: &str) {
-    println!("Changing password for {tag}", tag=tag);
+    let file = passbase_dir.join(tag);
+    assert!(fs::metadata(&file).is_ok(), format!("{} doesn't exist!", tag));
+    let mut fp = fs::OpenOptions::new()
+        .write(true)
+        .open(&file)
+        .unwrap();
+
+    let pass: String = rand::thread_rng()
+        .gen_ascii_chars()
+        .take(128)
+        .collect();
+
+    match fp.write_all(pass.as_bytes()) {
+        Err(why) => {
+            panic!("Failed to write new password: {}", why.description());
+        },
+        Ok(_) => {
+            read(passbase_dir, tag);
+        }
+    }
 }
 
 fn remove(passbase_dir: &Path, tag: &str) {
