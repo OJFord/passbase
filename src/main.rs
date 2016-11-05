@@ -7,6 +7,7 @@ use rand::Rng;
 use serde_json::{Map, Value};
 use std::fs;
 use std::error::Error;
+use std::io;
 use std::io::prelude::*;
 use std::path::Path;
 use std::process;
@@ -75,7 +76,18 @@ fn change(passbase_dir: &Path, tag: &str) {
 }
 
 fn remove(passbase_dir: &Path, tag: &str) {
-    println!("Removing password for {tag}", tag=tag);
+    let file = passbase_dir.join(tag);
+    println!("Are you sure, remove password for {tag} [y/N]? ", tag=tag);
+    let mut answer = String::new();
+    io::stdin().read_line(&mut answer);
+    match answer.trim().as_ref() {
+        "y" | "Y" => {
+            fs::remove_file(&file);
+        },
+        _ => {
+            println!("Not removing {tag}", tag=tag);
+        },
+    }
 }
 
 fn main() {
