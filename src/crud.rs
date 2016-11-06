@@ -11,7 +11,7 @@ use self::rand::Rng;
 
 pub fn create(passbase_dir: &Path, tag: &str) {
     let file = passbase_dir.join(tag);
-    assert!(fs::metadata(&file).is_err(), format!("{} already exists!", tag));
+    assert!(!file.is_file(), format!("Password for {} already exists!", tag));
     let mut fp = fs::File::create(&file).unwrap();
 
     let pass: String = rand::thread_rng()
@@ -22,7 +22,7 @@ pub fn create(passbase_dir: &Path, tag: &str) {
     match fp.write_all(pass.as_bytes()) {
         Err(why) => {
             fs::remove_file(&file);
-            panic!("Failed to write new password: {}", why.description());
+            panic!("Failed: {}", why.description());
         },
         Ok(_) => {
             read(passbase_dir, tag);
@@ -45,7 +45,7 @@ pub fn list(passbase_dir: &Path) {
 
 pub fn read(passbase_dir: &Path, tag: &str) {
     let file = passbase_dir.join(tag);
-    assert!(fs::metadata(&file).is_ok(), format!("{} doesn't exist!", tag));
+    assert!(file.is_file(), format!("No password exists for {}", tag));
     let mut fp = fs::File::open(passbase_dir.join(tag)).unwrap();
 
     let mut buf = String::new();
@@ -57,7 +57,7 @@ pub fn read(passbase_dir: &Path, tag: &str) {
 
 pub fn change(passbase_dir: &Path, tag: &str) {
     let file = passbase_dir.join(tag);
-    assert!(fs::metadata(&file).is_ok(), format!("{} doesn't exist!", tag));
+    assert!(file.is_file(), format!("No password exists for {}", tag));
     let mut fp = fs::OpenOptions::new()
         .write(true)
         .open(&file)
@@ -70,7 +70,7 @@ pub fn change(passbase_dir: &Path, tag: &str) {
 
     match fp.write_all(pass.as_bytes()) {
         Err(why) => {
-            panic!("Failed to write new password: {}", why.description());
+            panic!("Failed: {}", why.description());
         },
         Ok(_) => {
             read(passbase_dir, tag);
@@ -88,7 +88,7 @@ pub fn remove(passbase_dir: &Path, tag: &str) {
             fs::remove_file(&file);
         },
         _ => {
-            println!("Not removing {tag}", tag=tag);
+            println!("Not removing password for {tag}", tag=tag);
         },
     }
 }
