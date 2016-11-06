@@ -44,7 +44,10 @@ pub fn list(passbase_dir: &Path) {
 }
 
 pub fn read(passbase_dir: &Path, tag: &str) {
+    let file = passbase_dir.join(tag);
+    assert!(fs::metadata(&file).is_ok(), format!("{} doesn't exist!", tag));
     let mut fp = fs::File::open(passbase_dir.join(tag)).unwrap();
+
     let mut buf = String::new();
     fp.read_to_string(&mut buf);
 
