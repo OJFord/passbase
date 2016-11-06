@@ -31,10 +31,14 @@ pub fn create(passbase_dir: &Path, tag: &str) {
 }
 
 pub fn list(passbase_dir: &Path) {
-    for entry in fs::read_dir(passbase_dir).unwrap() {
-        let entry = entry.unwrap();
-        if !entry.path().is_dir() {
-            println!("{}", entry.file_name().into_string().unwrap());
+    let mut tags: Vec<_> = fs::read_dir(&passbase_dir).unwrap()
+        .map(|tag| tag.unwrap())
+        .collect();
+    tags.sort_by_key(|tag| tag.path());
+
+    for tag in tags {
+        if !tag.path().is_dir() {
+            println!("{}", tag.file_name().into_string().unwrap());
         }
     }
 }
