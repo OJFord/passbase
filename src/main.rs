@@ -1,110 +1,13 @@
 extern crate clap;
-extern crate rand;
-extern crate serde_json;
 
-use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
-use rand::Rng;
-use serde_json::{Map, Value};
-use std::fs;
-use std::error::Error;
-use std::io;
-use std::io::prelude::*;
-use std::path::Path;
-use std::process;
+mod crud;
+mod keybase;
 
+use ::std::fs;
+use ::std::path::Path;
+use crud::*;
+use self::clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
-fn get_keybase_user() -> String {
-    process::Command::new("keybase")
-        .arg("login")
-        .spawn()
-        .expect("Keybase auth failed");
-    let output = process::Command::new("keybase")
-        .arg("status")
-        .arg("-j")
-        .output().unwrap();
-    let status: Map<String, Value> = serde_json::from_str(
-        &String::from_utf8_lossy(&output.stdout)
-    ).unwrap();
-
-    return String::from(status.get("Username").unwrap().as_str().unwrap());
-}
-
-fn read(passbase_dir: &Path, tag: &str) {
-    let mut fp = fs::File::open(passbase_dir.join(tag)).unwrap();
-    let mut buf = String::new();
-    fp.read_to_string(&mut buf);
-
-    //TODO: display this then wip to keep history clear (use less?)
-    println!("{tag}: {password}", tag=tag, password=buf);
-}
-
-fn list(passbase_dir: &Path) {
-    for entry in fs::read_dir(passbase_dir).unwrap() {
-        let entry = entry.unwrap();
-        if !entry.path().is_dir() {
-            println!("{}", entry.file_name().into_string().unwrap());
-        }
-    }
-}
-
-fn create(passbase_dir: &Path, tag: &str) {
-    let file = passbase_dir.join(tag);
-    assert!(fs::metadata(&file).is_err(), format!("{} already exists!", tag));
-    let mut fp = fs::File::create(&file).unwrap();
-
-    let pass: String = rand::thread_rng()
-        .gen_ascii_chars()
-        .take(128)
-        .collect();
-
-    match fp.write_all(pass.as_bytes()) {
-        Err(why) => {
-            fs::remove_file(&file);
-            panic!("Failed to write new password: {}", why.description());
-        },
-        Ok(_) => {
-            read(passbase_dir, tag);
-        }
-    }
-}
-
-fn change(passbase_dir: &Path, tag: &str) {
-    let file = passbase_dir.join(tag);
-    assert!(fs::metadata(&file).is_ok(), format!("{} doesn't exist!", tag));
-    let mut fp = fs::OpenOptions::new()
-        .write(true)
-        .open(&file)
-        .unwrap();
-
-    let pass: String = rand::thread_rng()
-        .gen_ascii_chars()
-        .take(128)
-        .collect();
-
-    match fp.write_all(pass.as_bytes()) {
-        Err(why) => {
-            panic!("Failed to write new password: {}", why.description());
-        },
-        Ok(_) => {
-            read(passbase_dir, tag);
-        }
-    }
-}
-
-fn remove(passbase_dir: &Path, tag: &str) {
-    let file = passbase_dir.join(tag);
-    println!("Are you sure, remove password for {tag} [y/N]? ", tag=tag);
-    let mut answer = String::new();
-    io::stdin().read_line(&mut answer);
-    match answer.trim().as_ref() {
-        "y" | "Y" => {
-            fs::remove_file(&file);
-        },
-        _ => {
-            println!("Not removing {tag}", tag=tag);
-        },
-    }
-}
 
 fn main() {
     let tag_arg = Arg::with_name("tag")
@@ -144,7 +47,7 @@ fn main() {
         .get_matches();
 
     let passbase_dir = Path::new("/keybase/private")
-        .join(get_keybase_user())
+        .join(keybase::get_user())
         .join("passbase");
 
     match passbase_dir.exists() {
