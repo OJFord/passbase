@@ -48,7 +48,7 @@ fn main() {
 
     let passbase_dir = Path::new("/keybase/private")
         .join(keybase::get_user())
-        .join("passbase");
+        .join(".passbase");
 
     match passbase_dir.exists() {
         true => {
