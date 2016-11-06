@@ -1,5 +1,11 @@
-extern crate clap;
+#![feature(custom_attribute)]
+#![feature(proc_macro)]
 
+extern crate clap;
+#[macro_use]
+extern crate serde_derive;
+
+mod config;
 mod crud;
 mod keybase;
 
@@ -46,10 +52,17 @@ fn main() {
         )
         .get_matches();
 
-    let passbase_dir = Path::new("/keybase/private")
-        .join(keybase::get_user())
-        .join(".passbase");
+    let mut user = String::new();
+    if let Some(config_user) = config::get_user() {
+        user = config_user;
+    } else {
+        user = keybase::get_user();
+        config::set_user(&user);
+    }
 
+    let passbase_dir = Path::new("/keybase/private")
+        .join(user)
+        .join(".passbase");
     match passbase_dir.exists() {
         true => {
             assert!(passbase_dir.is_dir(), "A file 'passbase' already exists!")
