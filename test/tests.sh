@@ -6,11 +6,15 @@ green="\033[32m"
 default="\033[39m"
 outcome_pos="\033[74G"
 
+tests_run=0
+failures=0
+
 failure() {
     printf $outcome_pos
     printf $red
     printf "FAILED\n"
     printf $default
+    failures=$((failures+1))
     cat /tmp/test_err >> /tmp/test_failures
     rm /tmp/test_err
 }
@@ -38,6 +42,7 @@ describe() {
 }
 
 finish() {
+    tests_run=$((tests_run+1))
     test -f /tmp/test_failed && failure || success
     rm -f /tmp/test_failed
 }
@@ -134,5 +139,6 @@ finish
 # Teardown
 sudo rm -r /keybase/private/passbase_test
 rm $config_file
-test -f /tmp/test_failures && (cat /tmp/test_failures; exit 1)
+echo "Ran $tests_run tests; $failures of which failed."
+test $failures -eq 0 && exit 0 || exit 1
 #
