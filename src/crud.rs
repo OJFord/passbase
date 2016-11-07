@@ -46,8 +46,8 @@ pub fn list(passbase_dir: &Path) {
 pub fn read(passbase_dir: &Path, tag: &str) {
     let file = passbase_dir.join(tag);
     assert!(file.is_file(), format!("No password exists for {}", tag));
-    let mut fp = fs::File::open(passbase_dir.join(tag)).unwrap();
 
+    let mut fp = fs::File::open(passbase_dir.join(tag)).unwrap();
     let mut buf = String::new();
     fp.read_to_string(&mut buf);
 
@@ -58,6 +58,7 @@ pub fn read(passbase_dir: &Path, tag: &str) {
 pub fn change(passbase_dir: &Path, tag: &str) {
     let file = passbase_dir.join(tag);
     assert!(file.is_file(), format!("No password exists for {}", tag));
+
     let mut fp = fs::OpenOptions::new()
         .write(true)
         .open(&file)
@@ -80,7 +81,9 @@ pub fn change(passbase_dir: &Path, tag: &str) {
 
 pub fn remove(passbase_dir: &Path, tag: &str) {
     let file = passbase_dir.join(tag);
+    assert!(file.is_file(), format!("No password exists for {}", tag));
     println!("Are you sure, remove password for {tag} [y/N]? ", tag=tag);
+
     let mut answer = String::new();
     io::stdin().read_line(&mut answer);
     match answer.trim().as_ref() {
