@@ -42,25 +42,32 @@ finish() {
 
 
 # Setup
-cargo build
-export PATH="$PWD/target/debug:$PATH"
-export KEYBASE_USER="passbase_test"
+test_dir=$(dirname $(readlink -f "$0"))
+export PATH="$test_dir/bin:$PATH"
 
 keybase_dir="/keybase/private/$KEYBASE_USER"
-mkdir -p $keybase_dir
+sudo mkdir -p $keybase_dir
+user=$(whoami)
+sudo chown -R $user $keybase_dir
 
 passbase_dir="$keybase_dir/.passbase"
 config_file="$HOME/.passbase"
 
+keybase_loc=$(which keybase)
 hide_keybase() {
-    mv /usr/local/bin/keybase /tmp/keybase
+    sudo mv $keybase_loc /tmp/keybase
 }
 unhide_keybase() {
-    mv /tmp/keybase /usr/local/bin/keybase
+    sudo mv /tmp/keybase $keybase_loc
 }
 #
 
+describe "list succeeds with no tags"
+should_pass passbase list
+finish
+
 describe "failure with no config or Keybase"
+rm $config_file
 hide_keybase
 should_fail passbase list
 unhide_keybase
@@ -123,7 +130,7 @@ yes | should_pass passbase rm foobar
 finish
 
 # Teardown
-rm -r /keybase/private/passbase_test
+sudo rm -r /keybase/private/passbase_test
 rm $config_file
 cat /tmp/test_failures
 #

@@ -17,8 +17,8 @@ RUN apt-get update \
 RUN curl -sSf https://static.rust-lang.org/rustup.sh \
     | sh -s -- --channel=nightly
 
-ADD mock_keybase.sh /usr/local/bin/keybase
+ADD bin/keybase /usr/local/bin/keybase
 ADD tests.sh /usr/local/bin/runtests
 
 WORKDIR /var/run
-CMD runtests
+CMD cargo build && mv target/debug/passbase /usr/local/bin && runtests

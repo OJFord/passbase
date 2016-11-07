@@ -1,21 +1,19 @@
 sudo: required
 
-services:
-    - docker
+language: rust
+rust:
+    - nightly
+
+cache: cargo
 
 env:
-    DOCKER_COMPOSE_VERSION: 1.8.0
-
-before_install:
-    - sudo apt-get update
-    - sudo apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
-    - sudo rm /usr/local/bin/docker-compose
-    - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-    - chmod +x docker-compose
-    - sudo mv docker-compose /usr/local/bin
+    - KEYBASE_USER=passbase_test
 
 install:
-    - docker-compose build
+    - cargo build
+
+before_script:
+    - mv target/debug/passbase test/bin
 
 script:
-    - docker-compose run --rm tests
+    - ./test/tests.sh

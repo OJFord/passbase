@@ -1,4 +1,6 @@
 tests:
     build: test
+    environment:
+        KEYBASE_USER: passbase_test
     volumes:
         - ./:/var/run
