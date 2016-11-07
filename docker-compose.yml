@@ -1,0 +1,4 @@
+tests:
+    build: test
+    volumes:
+        - ./:/var/run
