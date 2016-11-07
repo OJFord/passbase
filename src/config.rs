@@ -1,8 +1,8 @@
 extern crate serde_json;
 
-use ::std;
+use ::std::env;
 use ::std::fs::File;
-use ::std::path::{Path, PathBuf};
+use ::std::path::PathBuf;
 
 #[derive(Serialize, Deserialize)]
 struct Config {
@@ -10,28 +10,32 @@ struct Config {
     user: Option<String>
 }
 
+pub const KBFS_DATA_DIR: &'static str = ".passbase";
 
 fn config_file() -> PathBuf {
-    std::env::home_dir()
+    env::home_dir()
         .expect("Failed to determine $HOME dir!")
-        .join(".passbase")
+        .join(&KBFS_DATA_DIR)
 }
 
 fn set_config(config: &Config) {
-    let mut fp = File::create(config_file());
+    let fp = File::create(config_file());
     match fp {
-        Ok(mut buf) => { serde_json::to_writer(&mut buf, config); },
-        Err(why) => { panic!("Failed to write config file: {}", why) },
+        Ok(mut buf) => {
+            serde_json::to_writer(&mut buf, config)
+                .expect("Failed to write config");
+        },
+        Err(why) => { panic!("Failed to write config: {}", why) },
     }
 }
 
 fn get_config() -> Config {
-    let mut fp = File::open(config_file());
+    let fp = File::open(config_file());
     match fp {
-        Ok(buf) => match serde_json::from_reader(buf) {
-            Ok(config) => config,
-            Err(why) => { panic!("Failed to parse config file: {}", why) },
-        },
+        Ok(buf) => {
+            serde_json::from_reader(buf)
+                .expect("Failed to parse config file")
+        }
         Err(_) => {
             let config = Config {
                 user: None

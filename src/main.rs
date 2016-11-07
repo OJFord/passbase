@@ -52,7 +52,7 @@ fn main() {
         )
         .get_matches();
 
-    let mut user = String::new();
+    let user: String;
     if let Some(config_user) = config::get_user() {
         user = config_user;
     } else {
@@ -65,11 +65,15 @@ fn main() {
         .join(".passbase");
     match passbase_dir.exists() {
         true => {
-            assert!(passbase_dir.is_dir(), "A file 'passbase' already exists!")
+            assert!(passbase_dir.is_dir(), format!(
+                "A file {} already exists in KBFS!",
+                config::KBFS_DATA_DIR
+            ))
         },
         false => {
             println!("Passbase directory does not exist in KBFS, creating...");
-            fs::create_dir(&passbase_dir);
+            fs::create_dir(&passbase_dir)
+                .expect("Failed to create Passbase directory");
         },
     }
 
