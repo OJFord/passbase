@@ -12,6 +12,7 @@ failure() {
     printf "FAILED\n"
     printf $default
     cat /tmp/test_err >> /tmp/test_failures
+    rm /tmp/test_err
 }
 
 success() {
@@ -19,15 +20,16 @@ success() {
     printf $green
     printf "OK\n"
     printf $default
+    rm -f /tmp/test_err
 }
 
 should_pass() {
-    $@ 1>/dev/null 2>/tmp/test_err || touch /tmp/test_failed
+    $@ 1>/dev/null 2>>/tmp/test_err || touch /tmp/test_failed
     printf '.'
 }
 
 should_fail() {
-    $@ 1>/dev/null 2>/tmp/test_err && touch /tmp/test_failed
+    $@ 1>/dev/null 2>>/tmp/test_err && touch /tmp/test_failed
     printf '.'
 }
 
@@ -132,5 +134,5 @@ finish
 # Teardown
 sudo rm -r /keybase/private/passbase_test
 rm $config_file
-cat /tmp/test_failures
+test -f /tmp/test_failures && (cat /tmp/test_failures; exit 1)
 #
