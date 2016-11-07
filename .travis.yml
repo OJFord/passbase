@@ -18,4 +18,4 @@ install:
     - docker-compose build
 
 script:
-    - docker-compose run tests
+    - docker-compose run --rm tests
