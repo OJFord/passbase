@@ -53,7 +53,7 @@ fn main() {
         .get_matches();
 
     let user: String;
-    if let Some(config_user) = config::get_user() {
+    if let Ok(config_user) = config::get_user() {
         user = config_user;
     } else {
         user = keybase::get_user();

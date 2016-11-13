@@ -1,6 +1,8 @@
 extern crate serde_json;
 
+use ::std::default::Default;
 use ::std::env;
+use ::std::fs;
 use ::std::fs::File;
 use ::std::path::PathBuf;
 
@@ -10,48 +12,50 @@ struct Config {
     user: Option<String>
 }
 
+impl Default for Config {
+    fn default() -> Config {
+        Config {
+            user: Default::default()
+        }
+    }
+}
+
 pub const KBFS_DATA_DIR: &'static str = ".passbase";
 
-fn config_file() -> PathBuf {
-    env::home_dir()
+fn config_file() -> Result<PathBuf, serde_json::Error> {
+    let path = env::home_dir()
         .expect("Failed to determine $HOME dir!")
-        .join(&KBFS_DATA_DIR)
+        .join(&KBFS_DATA_DIR);
+    if path.exists() {
+        assert!(path.is_file());
+    } else {
+        File::create(&path)
+            .map(|mut buf| serde_json::to_writer(&mut buf, &Config::default()));
+    }
+    Ok(path)
 }
 
 fn set_config(config: &Config) {
-    let fp = File::create(config_file());
-    match fp {
-        Ok(mut buf) => {
-            serde_json::to_writer(&mut buf, config)
-                .expect("Failed to write config");
-        },
-        Err(why) => { panic!("Failed to write config: {}", why) },
-    }
+    fs::OpenOptions::new()
+        .write(true)
+        .open(config_file().unwrap())
+        .map(|mut buf| serde_json::to_writer(&mut buf, config))
+        .expect("Failed to write to config file.");
 }
 
-fn get_config() -> Config {
-    let fp = File::open(config_file());
-    match fp {
-        Ok(buf) => {
-            serde_json::from_reader(buf)
-                .expect("Failed to parse config file")
-        }
-        Err(_) => {
-            let config = Config {
-                user: None
-            };
-            set_config(&config);
-            return config;
-        }
-    }
+fn get_config() -> Result<Config, serde_json::Error> {
+    serde_json::from_reader(File::open(config_file()?)?)
 }
 
-pub fn get_user() -> Option<String> {
-    get_config().user
+pub fn get_user() -> Result<String, String> {
+    get_config()
+        .map_err(|err| err.to_string())
+        ?.user
+        .ok_or("User not set.".to_owned())
 }
 
 pub fn set_user(user: &String) {
-    let mut config = get_config();
+    let mut config = get_config().unwrap();
     config.user = Some(user.clone());
     set_config(&config);
 }
