@@ -29,14 +29,15 @@ fn config_file() -> Result<PathBuf, serde_json::Error> {
     if path.exists() {
         assert!(path.is_file());
     } else {
-        File::create(&path)
-            .map(|mut buf| serde_json::to_writer(&mut buf, &Config::default()));
+        let _ = File::create(&path)
+            .map(|mut buf| serde_json::to_writer(&mut buf, &Config::default()))
+            .expect("Failed to create file.");
     }
     Ok(path)
 }
 
 fn set_config(config: &Config) {
-    fs::OpenOptions::new()
+    let _ = fs::OpenOptions::new()
         .write(true)
         .open(config_file().unwrap())
         .map(|mut buf| serde_json::to_writer(&mut buf, config))
