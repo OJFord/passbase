@@ -3,7 +3,7 @@ Passbase
 
 Development
 -----------
-![CI status](https://travis-ci.com/OJFord/passbase.svg?token=SxsettpUmvjPeVFxsTig)
+[![CI Status](https://travis-ci.com/OJFord/passbase.svg?token=SxsettpUmvjPeVFxsTig&branch=master)](https://travis-ci.com/OJFord/passbase)
 
 ### Tests
 
