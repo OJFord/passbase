@@ -5,6 +5,7 @@ use ::std::error::Error;
 use ::std::io;
 use ::std::io::prelude::*;
 use ::std::path::Path;
+use ::std::process::Command;
 use self::rand::Rng;
 
 
@@ -49,14 +50,20 @@ pub fn read(passbase_dir: &Path, tag: &str) {
     let file = passbase_dir.join(tag);
     assert!(file.is_file(), format!("No password exists for {}", tag));
 
-    let mut fp = fs::File::open(passbase_dir.join(tag))
-        .expect("Failed to open file");
-    let mut buf = String::new();
-    fp.read_to_string(&mut buf)
-        .expect("Failed to read file");
+    let ro_file = "/tmp/passbase-read";
+    fs::copy(file, ro_file)
+        .expect("Failed to access the filesystem");
 
-    //TODO: display this then wip to keep history clear (use less?)
-    println!("{tag}: {password}", tag=tag, password=buf);
+    let less = Command::new("less")
+        .arg(ro_file)
+        .spawn()
+        .expect("Failed to spawn less");
+
+    let exit = less.wait_with_output()
+        .expect("Failed to wait on less")
+        .status;
+
+    assert!(exit.success());
 }
 
 pub fn change(passbase_dir: &Path, tag: &str) {
