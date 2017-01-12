@@ -1,5 +1,4 @@
 #![feature(custom_attribute)]
-#![feature(proc_macro)]
 
 extern crate clap;
 #[macro_use]
