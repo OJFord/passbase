@@ -5,7 +5,7 @@ Passbase is a free password manager built on [Keybase](https://keybase.io).
 
 Generate long, random, secure passwords and store encrypted copies of them on your Keybase File System.
 
-Soon, you'll also be able to share passwords with other Keybase users, at your discretion.
+[Soon, you'll also be able to share passwords with other Keybase users](#upcoming-features), at your discretion.
 
 Usage
 -----
