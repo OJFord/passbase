@@ -1,7 +1,7 @@
 [package]
 name = "passbase"
 version = "0.1.0"
-authors = ["me@ojford.com"]
+authors = ["dev@ojford.com"]
 
 [dependencies]
 clap = "^2.14"

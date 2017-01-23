@@ -22,7 +22,7 @@ fn main() {
         .value_name("NAME");
     let app_matches = App::new("Passbase")
         .version("0.1")
-        .author("Oliver Ford <me@ojford.com>")
+        .author("Oliver Ford <dev@ojford.com>")
         .about("Password generation & management integrated with Keybase")
         .arg(tag_arg.clone())
         .setting(AppSettings::SubcommandsNegateReqs)
