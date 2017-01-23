@@ -136,6 +136,37 @@ should_pass passbase cat foobar
 yes | should_pass passbase rm foobar
 finish
 
+describe "custom length"
+should_pass passbase create -n10 short
+len=$(wc -c < $passbase_dir/short)
+should_pass test $len -eq 10
+should_pass passbase change --length 5 short
+len=$(wc -c < $passbase_dir/short)
+should_pass test $len -eq 5
+finish
+
+describe "no special chars"
+should_pass passbase create -X -n1000 nospecials
+len=$(cat $passbase_dir/nospecials | sed 's/[^a-z0-9A-Z]//g' | awk '{ print length }')
+should_pass test $len -eq 1000
+should_pass passbase change --no-specials -n1000 nospecials
+len=$(cat $passbase_dir/nospecials | sed 's/[^a-z0-9A-Z]//g' | awk '{ print length }')
+should_pass test $len -eq 1000
+finish
+
+describe "custom special chars"
+should_pass passbase create -s@! -n1000 somespecials
+len=$(cat $passbase_dir/somespecials | sed 's/[^!@a-z0-9A-Z]//g' | awk '{ print length }')
+should_pass test $len -eq 1000
+len=$(cat $passbase_dir/somespecials | sed 's/[^a-z0-9A-Z]//g' | awk '{ print length }')
+should_fail test $len -eq 1000
+should_pass passbase change --specials @! -n1000 somespecials
+len=$(cat $passbase_dir/somespecials | sed 's/[^!@a-z0-9A-Z]//g' | awk '{ print length }')
+should_pass test $len -eq 1000
+len=$(cat $passbase_dir/somespecials | sed 's/[^a-z0-9A-Z]//g' | awk '{ print length }')
+should_fail test $len -eq 1000
+finish
+
 # Teardown
 sudo rm -r /keybase/private/passbase_test
 rm $config_file
