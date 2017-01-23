@@ -8,19 +8,41 @@ use ::std::path::Path;
 use ::std::process::Command;
 use self::rand::Rng;
 
+fn gen(len: u16, specials: &str) -> String {
+    let mut pswd = String::new();
 
-pub fn create(passbase_dir: &Path, tag: &str) {
+    let mut rng_a = rand::thread_rng();
+    let mut rng_b = rand::thread_rng();
+
+    let mut alphanums = rng_a.gen_ascii_chars();
+
+    if specials.is_empty() {
+        return alphanums.take(len as usize).collect();
+    }
+
+    let specials: Vec<char> = specials
+        .chars()
+        .map(|c| c.clone())
+        .collect();
+
+    for _ in 0..len {
+        if rng_b.gen_weighted_bool(8) {
+            let special: char = *rng_b.choose(specials.as_slice()).unwrap();
+            pswd.push(special);
+        } else {
+            pswd.push(alphanums.next().unwrap());
+        }
+    }
+    pswd
+}
+
+pub fn create(passbase_dir: &Path, tag: &str, len: u16, specials: &str) {
     let file = passbase_dir.join(tag);
     assert!(!file.is_file(), format!("Password for {} already exists!", tag));
     let mut fp = fs::File::create(&file)
         .expect("Failed to create file");
 
-    let pass: String = rand::thread_rng()
-        .gen_ascii_chars()
-        .take(128)
-        .collect();
-
-    match fp.write_all(pass.as_bytes()) {
+    match fp.write_all(gen(len, specials).as_bytes()) {
         Err(why) => {
             fs::remove_file(&file)
                 .expect("Failed to remove created file");
@@ -66,7 +88,7 @@ pub fn read(passbase_dir: &Path, tag: &str) {
     assert!(exit.success());
 }
 
-pub fn change(passbase_dir: &Path, tag: &str) {
+pub fn change(passbase_dir: &Path, tag: &str, len: u16, specials: &str) {
     let file = passbase_dir.join(tag);
     assert!(file.is_file(), format!("No password exists for {}", tag));
 
@@ -75,12 +97,7 @@ pub fn change(passbase_dir: &Path, tag: &str) {
         .open(&file)
         .unwrap();
 
-    let pass: String = rand::thread_rng()
-        .gen_ascii_chars()
-        .take(128)
-        .collect();
-
-    fp.write_all(pass.as_bytes())
+    fp.write_all(gen(len, specials).as_bytes())
         .expect("Failed to write new password");
     read(passbase_dir, tag);
 }
