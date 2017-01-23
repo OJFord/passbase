@@ -13,27 +13,27 @@ Usage
 **Whenever you create/change/read a password, it will open in `less`: this is to ensure it does not pollute your history, or remain visible on screen; once you have copied the password to your clipboard, press `q` to quit.**
 
 Create a new password for cool-new-website:
-```sh
+```
 passbase create cool-new-website
 ```
 
 (Realise cool-new-website requires passwords to be at most 25 characters, and only contain the special characters `!` and `@`):
-```sh
+```
 passbase change cool-new-website -n25 -S!@
 ```
 
 Some time later, when you want to login to cool-new-website again:
-```sh
+```
 passbase read cool-new-website
 ```
 
 Get bored of cool-new-website:
-```sh
+```
 passbase delete cool-new-website
 ```
 
 What sites do we have passwords for again?
-```sh
+```
 passbase list
 ```
 
@@ -60,13 +60,13 @@ Installation
 ------------
 
 macOS users can use [Homebrew](http://brew.sh/):
-```sh
+```
 brew install OJFord/formulae/passbase
 ```
 
 or download [the latest release](https://github.com/OJFord/passbase/releases).
 
-If you're building from source, you'll need Rust nightly (around November 2016 should be fine). PRs with easier installation on \$YOUR_PLATFORM are most welcome!
+If you're building from source, you'll need Rust nightly (around November 2016 should be fine). PRs with easier installation on $your_platform are most welcome!
 
 Development
 -----------
@@ -76,6 +76,6 @@ Development
 
 The (integration) tests run inside a Docker container, primarily for ease of mocking the Keybase CLI tool and root directory.
 
-``` {.sh}
-$ docker-compose run tests
+```
+docker-compose run tests
 ```
