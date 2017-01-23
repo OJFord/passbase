@@ -92,14 +92,17 @@ pub fn change(passbase_dir: &Path, tag: &str, len: u16, specials: &str) {
     let file = passbase_dir.join(tag);
     assert!(file.is_file(), format!("No password exists for {}", tag));
 
-    let mut fp = fs::OpenOptions::new()
-        .write(true)
-        .open(&file)
-        .unwrap();
+    let mut old_file = file.clone();
+    old_file.set_extension("old");
 
-    fp.write_all(gen(len, specials).as_bytes())
-        .expect("Failed to write new password");
-    read(passbase_dir, tag);
+    match fs::rename(file, old_file) {
+        Ok(_) => create(passbase_dir, tag, len, specials),
+        Err(e) => panic!("Failed to rename old file: {}", e),
+    }
+}
+
+pub fn recover(passbase_dir: &Path, tag: &str) {
+    read(passbase_dir, format!("{}.old", tag).as_str());
 }
 
 pub fn remove(passbase_dir: &Path, tag: &str) {

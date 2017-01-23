@@ -83,13 +83,20 @@ fn main() {
         )
         .subcommand(
             SubCommand::with_name("change")
+                .help("Changes a password. Previous can be `recover`ed.")
                 .arg(no_sym_arg.clone())
                 .arg(sym_arg.clone())
                 .arg(len_arg.clone())
                 .arg(tag_arg.clone())
         )
         .subcommand(
+            SubCommand::with_name("recover")
+                .help("Recovers the previous version of a `change`d password")
+                .arg(tag_arg.clone())
+        )
+        .subcommand(
             SubCommand::with_name("remove")
+                .help("DELETES given password FOREVER. Cannot be `recover`ed")
                 .visible_alias("rm")
                 .arg(tag_arg.clone())
         )
@@ -143,6 +150,9 @@ fn main() {
         },
         ("change", Some(args)) => {
             change(&passbase_dir, tag(args), len(args), specials(args))
+        },
+        ("recover", Some(args)) => {
+            recover(&passbase_dir, tag(args))
         },
         ("remove", Some(args)) => {
             remove(&passbase_dir, tag(args))
