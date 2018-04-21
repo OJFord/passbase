@@ -58,6 +58,13 @@ fn main() {
         .default_value(ACCEPTED_SPECIAL_CHARS)
         .validator(validate_special_chars);
 
+    let chars_arg = Arg::with_name("chars")
+        .help("Access characters by numerical position")
+        .short("c")
+        .long("chars")
+        .takes_value(true)
+        .validator(validate_char_positions);
+
     let app_matches = App::new("Passbase")
         .version("0.1")
         .author("Oliver Ford <dev@ojford.com>")
@@ -71,6 +78,7 @@ fn main() {
         .subcommand(
             SubCommand::with_name("read")
                 .visible_alias("cat")
+                .arg(chars_arg.clone())
                 .arg(tag_arg.clone())
         )
         .subcommand(
@@ -143,6 +151,17 @@ fn main() {
         }
     }
 
+    fn positions<'a>(args: &'a ArgMatches) -> Option<Vec<u16>> {
+        if args.is_present("chars") {
+            let positions = args.value_of("chars").unwrap()
+                .split(",")
+                .map(|p| p.parse::<u16>().expect("Validation error"));
+            return Some(positions.collect());
+        } else {
+            return None;
+        }
+    }
+
     match app_matches.subcommand() {
         ("list", _) => list(&passbase_dir),
         ("create", Some(args)) => {
@@ -158,10 +177,10 @@ fn main() {
             remove(&passbase_dir, tag(args))
         },
         ("read", Some(args)) => {
-            read(&passbase_dir, tag(args))
+            read(&passbase_dir, tag(args), positions(args))
         },
         _ => {
-            read(&passbase_dir, tag(&app_matches))
+            read(&passbase_dir, tag(&app_matches), None)
         },
     }
 }
@@ -192,4 +211,14 @@ fn validate_number(v: String) -> Result<(), String> {
         Ok(_) => Ok(()),
         Err(_) => Err(String::from("must be an integer")),
     }
+}
+
+fn validate_char_positions(v: String) -> Result<(), String> {
+    for position in v.split(",") {
+        match validate_number(position.to_string()) {
+            Ok(_) => {},
+            Err(why) => return Err(why),
+        }
+    }
+    Ok(())
 }

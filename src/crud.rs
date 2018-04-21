@@ -49,7 +49,7 @@ pub fn create(passbase_dir: &Path, tag: &str, len: u16, specials: &str) {
             panic!("Failed: {}", why.description());
         },
         Ok(_) => {
-            read(passbase_dir, tag);
+            read(passbase_dir, tag, None);
         }
     }
 }
@@ -68,13 +68,24 @@ pub fn list(passbase_dir: &Path) {
     }
 }
 
-pub fn read(passbase_dir: &Path, tag: &str) {
+pub fn read(passbase_dir: &Path, tag: &str, positions: Option<Vec<u16>>) {
     let file = passbase_dir.join(tag);
     assert!(file.is_file(), format!("No password exists for {}", tag));
 
     let ro_file = "/tmp/passbase-read";
-    fs::copy(file, ro_file)
-        .expect("Failed to access the filesystem");
+
+    if positions {
+        let characters = fs::read(file).expect("Unable to read file");
+        let mut out = String::new();
+
+        for pos in positions {
+            out.write(pos + ":" + characters[pos] + "\t");
+        }
+        fs::write(ro_file, out.as_bytes());
+    } else {
+	fs::copy(file, ro_file)
+	    .expect("Failed to access the filesystem");
+    }
 
     let less = Command::new("less")
         .arg(ro_file)
@@ -102,7 +113,7 @@ pub fn change(passbase_dir: &Path, tag: &str, len: u16, specials: &str) {
 }
 
 pub fn recover(passbase_dir: &Path, tag: &str) {
-    read(passbase_dir, format!("{}.old", tag).as_str());
+    read(passbase_dir, format!("{}.old", tag).as_str(), None);
 }
 
 pub fn remove(passbase_dir: &Path, tag: &str) {
