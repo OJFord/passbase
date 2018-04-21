@@ -167,6 +167,18 @@ len=$(cat $passbase_dir/somespecials | sed 's/[^a-z0-9A-Z]//g' | awk '{ print le
 should_fail test $len -eq 1000
 finish
 
+describe "characters by position"
+echo abcdef > "$passbase_dir/memorable"
+output="$(mktemp)"
+output_short="$(mktemp)"
+expect="$(mktemp)"
+should_pass passbase read --chars=1,3,6 memorable > "$output"
+should_pass passbase read -c1,3,6 memorable > "$output_short"
+should_pass diff "$output" "$output_short"
+echo -e '1:a\t3:c\t6:f' > "$expect"
+should_pass diff "$expect" "$output"
+finish
+
 # Teardown
 sudo rm -r /keybase/private/passbase_test
 rm $config_file
