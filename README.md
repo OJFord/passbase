@@ -37,6 +37,13 @@ What sites do we have passwords for again?
 passbase list
 ```
 
+I'd suggest creating an alias to help find and read your passwords, such as:
+```
+passbase read "$(passbase ls | fzf --no-preview --no-multi)" | pbcopy
+```
+
+which will fuzzy-find a password name, and then its value to the clipboard. (Example assumes POSIX shell on macOS.)
+
 ### Aliases
 
 You can also use `ls` and `rm` as aliases for the obvious.
