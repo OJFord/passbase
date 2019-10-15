@@ -4,7 +4,7 @@ version = "0.1.1" # patch; macOS Catalina filesystem fixes
 authors = ["Oliver Ford <dev@ojford.com>", "Johanness Nilsson <jnilsson@teknomadix.com>"]
 description = "Passbase is a free password manager built on Keybase. Generate long, random, secure passwords and store encrypted copies of them on your Keybase File System."
 documentation = "https://github.com/OJFord/passbase/blob/master/README.md"
-homepage = ".https://github.com/OJFord/passbase"
+homepage = "https://github.com/OJFord/passbase"
 repository = "https://github.com/OJFord/passbase.git"
 
 [dependencies]
