@@ -110,7 +110,7 @@ fn main() {
         config::set_user(&user);
     }
 
-    let passbase_dir = Path::new("/keybase/private")
+    let passbase_dir = Path::new("/Volumes/Keybase/private")
         .join(user)
         .join(".passbase");
     match passbase_dir.exists() {

@@ -1,8 +1,7 @@
 extern crate serde_json;
+extern crate dirs;
 
 use ::std::default::Default;
-use ::std::env;
-use ::std::fs;
 use ::std::fs::File;
 use ::std::path::PathBuf;
 
@@ -23,7 +22,7 @@ impl Default for Config {
 pub const KBFS_DATA_DIR: &'static str = ".passbase";
 
 fn config_file() -> Result<PathBuf, serde_json::Error> {
-    let path = env::home_dir()
+    let path = dirs::home_dir()
         .expect("Failed to determine $HOME dir!")
         .join(&KBFS_DATA_DIR);
     if path.exists() {
@@ -37,7 +36,7 @@ fn config_file() -> Result<PathBuf, serde_json::Error> {
 }
 
 fn set_config(config: &Config) {
-    let _ = fs::OpenOptions::new()
+    let _ = ::std::fs::OpenOptions::new()
         .write(true)
         .open(config_file().unwrap())
         .map(|mut buf| serde_json::to_writer(&mut buf, config))
