@@ -1,12 +1,12 @@
 extern crate rand;
 
-use ::std::fs;
-use ::std::error::Error;
-use ::std::io;
-use ::std::io::prelude::*;
-use ::std::path::Path;
-use ::std::process::Command;
 use self::rand::Rng;
+use std::error::Error;
+use std::fs;
+use std::io;
+use std::io::prelude::*;
+use std::path::Path;
+use std::process::Command;
 
 fn gen(len: u16, specials: &str) -> String {
     let mut pswd = String::new();
@@ -20,10 +20,7 @@ fn gen(len: u16, specials: &str) -> String {
         return alphanums.take(len as usize).collect();
     }
 
-    let specials: Vec<char> = specials
-        .chars()
-        .map(|c| c.clone())
-        .collect();
+    let specials: Vec<char> = specials.chars().map(|c| c.clone()).collect();
 
     for _ in 0..len {
         if rng_b.gen_weighted_bool(8) {
@@ -38,16 +35,17 @@ fn gen(len: u16, specials: &str) -> String {
 
 pub fn create(passbase_dir: &Path, tag: &str, len: u16, specials: &str) {
     let file = passbase_dir.join(tag);
-    assert!(!file.is_file(), format!("Password for {} already exists!", tag));
-    let mut fp = fs::File::create(&file)
-        .expect("Failed to create file");
+    assert!(
+        !file.is_file(),
+        format!("Password for {} already exists!", tag)
+    );
+    let mut fp = fs::File::create(&file).expect("Failed to create file");
 
     match fp.write_all(gen(len, specials).as_bytes()) {
         Err(why) => {
-            fs::remove_file(&file)
-                .expect("Failed to remove created file");
+            fs::remove_file(&file).expect("Failed to remove created file");
             panic!("Failed: {}", why.description());
-        },
+        }
         Ok(_) => {
             read(passbase_dir, tag);
         }
@@ -73,15 +71,15 @@ pub fn read(passbase_dir: &Path, tag: &str) {
     assert!(file.is_file(), format!("No password exists for {}", tag));
 
     let ro_file = "/tmp/passbase-read";
-    fs::copy(file, ro_file)
-        .expect("Failed to access the filesystem");
+    fs::copy(file, ro_file).expect("Failed to access the filesystem");
 
     let less = Command::new("less")
         .arg(ro_file)
         .spawn()
         .expect("Failed to spawn less");
 
-    let exit = less.wait_with_output()
+    let exit = less
+        .wait_with_output()
         .expect("Failed to wait on less")
         .status;
 
@@ -108,18 +106,18 @@ pub fn recover(passbase_dir: &Path, tag: &str) {
 pub fn remove(passbase_dir: &Path, tag: &str) {
     let file = passbase_dir.join(tag);
     assert!(file.is_file(), format!("No password exists for {}", tag));
-    println!("Are you sure, remove password for {tag} [y/N]? ", tag=tag);
+    println!("Are you sure, remove password for {tag} [y/N]? ", tag = tag);
 
     let mut answer = String::new();
-    io::stdin().read_line(&mut answer)
+    io::stdin()
+        .read_line(&mut answer)
         .expect("Failed to read from stdin");
     match answer.trim().as_ref() {
         "y" | "Y" => {
-            fs::remove_file(&file)
-                .expect("Failed to remove file");
-        },
+            fs::remove_file(&file).expect("Failed to remove file");
+        }
         _ => {
-            println!("Not removing password for {tag}", tag=tag);
-        },
+            println!("Not removing password for {tag}", tag = tag);
+        }
     }
 }

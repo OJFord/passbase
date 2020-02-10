@@ -9,21 +9,19 @@ mod config;
 mod crud;
 mod keybase;
 
-use ::std::fs;
-use ::std::collections::HashSet;
-use ::std::iter::FromIterator;
-use ::std::path::Path;
-use crud::*;
 use self::clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
+use crud::*;
+use std::collections::HashSet;
+use std::fs;
+use std::iter::FromIterator;
+use std::path::Path;
 
 // These are the easily accessible special characters on a UK keyboard;
 // which, in my testing, do not break 'double-tap select' (to copy easily).
-const ACCEPTED_SPECIAL_CHARS: &'static str  = "~`!@£&*_+-=\\,./|?";
+const ACCEPTED_SPECIAL_CHARS: &'static str = "~`!@£&*_+-=\\,./|?";
 
 lazy_static! {
-    static ref ACCEPTED_SPECIALS_HASH: HashSet<char> = {
-        ACCEPTED_SPECIAL_CHARS.chars().collect()
-    };
+    static ref ACCEPTED_SPECIALS_HASH: HashSet<char> = { ACCEPTED_SPECIAL_CHARS.chars().collect() };
 }
 
 fn main() {
@@ -62,14 +60,11 @@ fn main() {
         .about("Password generation & management integrated with Keybase")
         .arg(tag_arg.clone())
         .setting(AppSettings::SubcommandsNegateReqs)
-        .subcommand(
-            SubCommand::with_name("list")
-                .visible_alias("ls")
-        )
+        .subcommand(SubCommand::with_name("list").visible_alias("ls"))
         .subcommand(
             SubCommand::with_name("read")
                 .visible_alias("cat")
-                .arg(tag_arg.clone())
+                .arg(tag_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("create")
@@ -77,7 +72,7 @@ fn main() {
                 .arg(no_sym_arg.clone())
                 .arg(sym_arg.clone())
                 .arg(len_arg.clone())
-                .arg(tag_arg.clone())
+                .arg(tag_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("change")
@@ -85,18 +80,18 @@ fn main() {
                 .arg(no_sym_arg.clone())
                 .arg(sym_arg.clone())
                 .arg(len_arg.clone())
-                .arg(tag_arg.clone())
+                .arg(tag_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("recover")
                 .help("Recovers the previous version of a `change`d password")
-                .arg(tag_arg.clone())
+                .arg(tag_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("remove")
                 .help("DELETES given password FOREVER. Cannot be `recover`ed")
                 .visible_alias("rm")
-                .arg(tag_arg.clone())
+                .arg(tag_arg.clone()),
         )
         .get_matches();
 
@@ -116,23 +111,20 @@ fn main() {
                 Path::new("/Keybase/private")
             }
         }
-        _ => {
-            Path::new("/Keybase/private")
-        }
-    }.join(user).join(".passbase");
+        _ => Path::new("/Keybase/private"),
+    }
+    .join(user)
+    .join(".passbase");
 
     match passbase_dir.exists() {
-        true => {
-            assert!(passbase_dir.is_dir(), format!(
-                "A file {} already exists in KBFS!",
-                config::KBFS_DATA_DIR
-            ))
-        },
+        true => assert!(
+            passbase_dir.is_dir(),
+            format!("A file {} already exists in KBFS!", config::KBFS_DATA_DIR)
+        ),
         false => {
             println!("Passbase directory does not exist in KBFS, creating...");
-            fs::create_dir(&passbase_dir)
-                .expect("Failed to create Passbase directory");
-        },
+            fs::create_dir(&passbase_dir).expect("Failed to create Passbase directory");
+        }
     }
 
     fn tag<'a>(args: &'a ArgMatches) -> &'a str {
@@ -153,24 +145,12 @@ fn main() {
 
     match app_matches.subcommand() {
         ("list", _) => list(&passbase_dir),
-        ("create", Some(args)) => {
-            create(&passbase_dir, tag(args), len(args), specials(args))
-        },
-        ("change", Some(args)) => {
-            change(&passbase_dir, tag(args), len(args), specials(args))
-        },
-        ("recover", Some(args)) => {
-            recover(&passbase_dir, tag(args))
-        },
-        ("remove", Some(args)) => {
-            remove(&passbase_dir, tag(args))
-        },
-        ("read", Some(args)) => {
-            read(&passbase_dir, tag(args))
-        },
-        _ => {
-            read(&passbase_dir, tag(&app_matches))
-        },
+        ("create", Some(args)) => create(&passbase_dir, tag(args), len(args), specials(args)),
+        ("change", Some(args)) => change(&passbase_dir, tag(args), len(args), specials(args)),
+        ("recover", Some(args)) => recover(&passbase_dir, tag(args)),
+        ("remove", Some(args)) => remove(&passbase_dir, tag(args)),
+        ("read", Some(args)) => read(&passbase_dir, tag(args)),
+        _ => read(&passbase_dir, tag(&app_matches)),
     }
 }
 
@@ -188,9 +168,7 @@ fn validate_special_chars(v: String) -> Result<(), String> {
         Err(format!(
             "must be a subset of {} -- use: {}",
             ACCEPTED_SPECIAL_CHARS,
-            String::from_iter(
-                intersection_of_requirements.iter().map(|c| *c)
-            )
+            String::from_iter(intersection_of_requirements.iter().map(|c| *c))
         ))
     }
 }

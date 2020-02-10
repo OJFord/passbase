@@ -1,21 +1,21 @@
 extern crate serde_json;
 
-use ::std::default::Default;
-use ::std::env;
-use ::std::fs;
-use ::std::fs::File;
-use ::std::path::PathBuf;
+use std::default::Default;
+use std::env;
+use std::fs;
+use std::fs::File;
+use std::path::PathBuf;
 
 #[derive(Serialize, Deserialize)]
 struct Config {
-    #[serde(rename="User")]
-    user: Option<String>
+    #[serde(rename = "User")]
+    user: Option<String>,
 }
 
 impl Default for Config {
     fn default() -> Config {
         Config {
-            user: Default::default()
+            user: Default::default(),
         }
     }
 }
@@ -50,8 +50,8 @@ fn get_config() -> Result<Config, serde_json::Error> {
 
 pub fn get_user() -> Result<String, String> {
     get_config()
-        .map_err(|err| err.to_string())
-        ?.user
+        .map_err(|err| err.to_string())?
+        .user
         .ok_or("User not set.".to_owned())
 }
 
