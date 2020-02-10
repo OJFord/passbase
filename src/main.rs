@@ -1,6 +1,3 @@
-#![feature(custom_attribute)]
-#![feature(slice_patterns)]
-
 extern crate clap;
 #[macro_use]
 extern crate serde_derive;

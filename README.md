@@ -73,8 +73,6 @@ brew install OJFord/formulae/passbase
 
 or download [the latest release](https://github.com/OJFord/passbase/releases).
 
-If you're building from source, you'll need Rust nightly (around November 2016 should be fine). PRs with easier installation on $your_platform are most welcome!
-
 Development
 -----------
 [![CI Status](https://travis-ci.com/OJFord/passbase.svg?token=SxsettpUmvjPeVFxsTig&branch=master)](https://travis-ci.com/OJFord/passbase)
