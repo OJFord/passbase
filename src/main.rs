@@ -1,4 +1,5 @@
 extern crate clap;
+extern crate os_type;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
@@ -107,9 +108,19 @@ fn main() {
         config::set_user(&user);
     }
 
-    let passbase_dir = Path::new("/keybase/private")
-        .join(user)
-        .join(".passbase");
+    let passbase_dir = match os_type::current_platform().os_type {
+        os_type::OSType::OSX => {
+            if os_type::current_platform().version > "10.15.0".into() {
+                Path::new("/Volumes/Keybase/private")
+            } else {
+                Path::new("/Keybase/private")
+            }
+        }
+        _ => {
+            Path::new("/Keybase/private")
+        }
+    }.join(user).join(".passbase");
+
     match passbase_dir.exists() {
         true => {
             assert!(passbase_dir.is_dir(), format!(

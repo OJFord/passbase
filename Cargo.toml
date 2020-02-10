@@ -6,6 +6,7 @@ authors = ["dev@ojford.com"]
 [dependencies]
 clap = "^2.14"
 lazy_static = "^0.2"
+os_type = "^2.2"
 rand = "^0.3"
 serde = "^0.8"
 serde_derive = "^0.8"
